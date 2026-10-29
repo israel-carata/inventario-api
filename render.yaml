@@ -1,0 +1,30 @@
+# Blueprint de Render: crea el servidor web y la base PostgreSQL, y los conecta.
+# En Render: New -> Blueprint -> elegir este repositorio.
+services:
+  - type: web
+    name: inventario-api
+    runtime: docker
+    plan: free            # cambiar a "starter" para que no se duerma
+    region: oregon
+    autoDeploy: true      # cada git push vuelve a desplegar
+    envVars:
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_URL
+        fromDatabase:
+          name: inventario-db
+          property: connectionString
+      - key: SEED_ON_DEPLOY
+        value: "true"
+
+databases:
+  - name: inventario-db
+    plan: free
+    region: oregon
+    databaseName: inventario
