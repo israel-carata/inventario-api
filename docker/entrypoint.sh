@@ -27,7 +27,16 @@ php artisan package:discover --ansi || true
 php artisan storage:link || true
 
 # 5) Migraciones automáticas (y datos de ejemplo si SEED_ON_DEPLOY=true)
-php artisan migrate --force
+#    Si fallan (p. ej. al cambiar de proyecto, tablas que ya existen), se reinicia la base.
+#    Para desactivar el reinicio: variable MIGRATE_FRESH_ON_FAIL=false
+if ! php artisan migrate --force; then
+    if [ "$MIGRATE_FRESH_ON_FAIL" != "false" ]; then
+        echo "⚠️  Las migraciones fallaron: se reinicia la base (migrate:fresh)"
+        php artisan migrate:fresh --force
+    else
+        exit 1
+    fi
+fi
 if [ "$SEED_ON_DEPLOY" = "true" ]; then
     php artisan db:seed --force || echo "Seeder falló (se continúa)"
 fi
